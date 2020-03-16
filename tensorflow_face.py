@@ -22,7 +22,6 @@ def getpaddingSize(shape):
 
 def dealwithimage(img, h=64, w=64):
     ''' dealwithimage '''
-    #img = cv2.imread(imgpath)
     top, bottom, left, right = getpaddingSize(img.shape[0:2])
     img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=[0, 0, 0])
     img = cv2.resize(img, (h, w))
@@ -48,8 +47,6 @@ def getface(imgpath, outdir):
     for f_x, f_y, f_w, f_h in faces:
         n += 1
         face = img[f_y:f_y+f_h, f_x:f_x+f_w]
-        # may be do not need resize now
-        #face = cv2.resize(face, (64, 64))
         face = dealwithimage(face, IMGSIZE, IMGSIZE)
         for inx, (alpha, bias) in enumerate([[1, 1], [1, 50], [0.5, 0]]):
             facetemp = relight(face, alpha, bias)
@@ -95,7 +92,6 @@ def getfileandlabel(filedir):
     ''' get path and host paire and class index to name'''
     dictdir = dict([[name, os.path.join(filedir, name)] \
                     for name in os.listdir(filedir) if os.path.isdir(os.path.join(filedir, name))])
-                    #for (path, dirnames, _) in os.walk(filedir) for dirname in dirnames])
 
     dirnamelist, dirpathlist = dictdir.keys(), dictdir.values()
     indexlist = list(range(len(dirnamelist)))
@@ -109,7 +105,6 @@ def main(_):
     if os.path.exists(savepath+'.meta') is False:
         isneedtrain = True
     if isneedtrain:
-        #first generate all face
         log.debug('generateface')
         generateface([['./image/trainimages', './image/trainfaces']])
         pathlabelpair, indextoname = getfileandlabel('./image/trainfaces')
@@ -122,21 +117,16 @@ def main(_):
     else:
         testfromcamera(savepath)
         
-        #print(np.column_stack((out, argmax)))
-
 def testfromcamera(chkpoint):
     camera = cv2.VideoCapture(0)
     haar = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
     pathlabelpair, indextoname = getfileandlabel('./image/trainfaces')
     output = myconv.cnnLayer(len(pathlabelpair))
-    #predict = tf.equal(tf.argmax(output, 1), tf.argmax(y_data, 1))
     predict = output
 
     saver = tf.train.Saver()
     with tf.Session() as sess:
-        #sess.run(tf.global_variables_initializer())
         saver.restore(sess, chkpoint)
-        
 
         n = 1
         while 1:
@@ -150,7 +140,6 @@ def testfromcamera(chkpoint):
                 for f_x, f_y, f_w, f_h in faces:
                     face = img[f_y:f_y+f_h, f_x:f_x+f_w]
                     face = cv2.resize(face, (IMGSIZE, IMGSIZE))
-                    #could deal with face to train
                     test_x = np.array([face])
                     test_x = test_x.astype(np.float32) / 255.0
                     
@@ -172,9 +161,4 @@ def testfromcamera(chkpoint):
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    # first generate all face
-    main(0)
-    #onehot([1, 3, 9])
-    #print(getfileandlabel('./image/trainimages'))
-    #generateface([['./image/trainimages', './image/trainfaces']])
-
+    main(0)   

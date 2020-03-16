@@ -49,7 +49,6 @@ def getfacefromcamera(outdir):
             for f_x, f_y, f_w, f_h in faces:
                 face = img[f_y:f_y+f_h, f_x:f_x+f_w]
                 face = cv2.resize(face, (IMGSIZE, IMGSIZE))
-                #could deal with face to train
                 face = relight(face, random.uniform(0.5, 1.5), random.randint(-50, 50))
                 cv2.imwrite(os.path.join(outdir, str(n)+'.jpg'), face)
 
